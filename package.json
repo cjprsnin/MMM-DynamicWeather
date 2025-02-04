@@ -4,24 +4,41 @@
   "description": "A heavily configurable MagicMirror Module to display different animations based on current weather and show customized event effects.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/scottcl88/MMM-DynamicWeather.git"
+    "url": "git+https://github.com/cjprsnin/MMM-DynamicWeather.git"
   },
   "keywords": [
     "magic mirror",
     "module",
-    "weather"
+    "weather",
+    "animation",
+    "custom effects"
   ],
   "author": "Scott Lewis",
   "license": "MIT",
   "bugs": {
-    "url": "git+https://github.com/scottcl88/MMM-DynamicWeather/issues"
+    "url": "git+https://github.com/cjprsnin/MMM-DynamicWeather/issues"
   },
-  "homepage": "git+https://github.com/scottcl88/MMM-DynamicWeather#readme",
+  "homepage": "git+https://github.com/cjprsnin/MMM-DynamicWeather#readme",
   "main": "src/MMM-DynamicWeather.js",
   "prettier": {
     "printWidth": 200
   },
+  "scripts": {
+    "start": "node src/MMM-DynamicWeather.js",
+    "dev": "nodemon src/MMM-DynamicWeather.js",
+    "build": "tsc",
+    "test": "jest",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .ts,.js"
+  },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "nodemon": "^2.0.20",
+    "jest": "^29.0.1",
+    "prettier": "^2.7.1",
+    "eslint": "^8.19.0"
+  },
+  "dependencies": {
+    "axios": "^0.27.2"
   }
 }
