@@ -9,82 +9,71 @@
 
 const NodeHelper = require("node_helper");
 const https = require('https');
+
 module.exports = NodeHelper.create({
   start: function () { },
 
-  callApi: function (payload) {
-    let that = this;
-    this.url = payload;
-    let success = false;
+  callApi: function (url) {
     console.info("[MMM-DynamicWeather] Getting Weather API data");
 
-    https.get(this.url, (res) => {
+    https.get(url, (res) => {
       let body = '';
 
-      res.on('data', (chunk) => {
-        body += chunk;
-      });
-
-      res.on('end', () => {
-        let result = JSON.parse(body);
-        if (res.statusCode !== 200) {
-          console.error("[MMM-DynamicWeather] Failed getting api: ", res.statusCode);
-        } else {
-          console.info("[MMM-DynamicWeather] Received successful Weather API data");
-          success = true;
-        }
-
-        that.sendSocketNotification("API-Received", {
-          url: that.url,
-          result: result,
-          success: success,
-        });
-      });
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => { this.handleApiResponse(res, body, url); });
 
     }).on('error', (error) => {
       console.error("[MMM-DynamicWeather] Failed getting api: ", error);
     });
   },
 
-  callHoliday: function () {
-    let that = this;
+  handleApiResponse: function (res, body, url) {
     let success = false;
+    let result = JSON.parse(body);
+
+    if (res.statusCode !== 200) {
+      console.error("[MMM-DynamicWeather] Failed getting api: ", res.statusCode);
+    } else {
+      console.info("[MMM-DynamicWeather] Received successful Weather API data");
+      success = true;
+    }
+
+    this.sendSocketNotification("API-Received", { url, result, success });
+  },
+
+  callHoliday: function () {
+    const url = "https://www.timeanddate.com/holidays/us/?hol=43122559";
     console.info("[MMM-DynamicWeather] Getting Holiday data");
 
-    https.get("https://www.timeanddate.com/holidays/us/?hol=43122559", (res) => {
+    https.get(url, (res) => {
       let body = '';
 
-      res.on('data', (chunk) => {
-        body += chunk;
-      });
-
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          console.error("[MMM-DynamicWeather] Failed getting holidays: ", res.statusCode);
-        } else {
-          console.info("[MMM-DynamicWeather] Received successful Holiday data");
-          success = true;
-        }
-
-        let result = { holidayBody: body };
-        that.sendSocketNotification("Holiday-Received", {
-          url: that.url,
-          result: result,
-          success: success,
-        });
-      });
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => { this.handleHolidayResponse(res, body); });
 
     }).on('error', (error) => {
       console.error("[MMM-DynamicWeather] Failed getting holidays: ", error);
     });
   },
 
+  handleHolidayResponse: function (res, body) {
+    let success = false;
+
+    if (res.statusCode !== 200) {
+      console.error("[MMM-DynamicWeather] Failed getting holidays: ", res.statusCode);
+    } else {
+      console.info("[MMM-DynamicWeather] Received successful Holiday data");
+      success = true;
+    }
+
+    this.sendSocketNotification("Holiday-Received", { result: { holidayBody: body }, success });
+  },
+
   socketNotificationReceived: function (notification, payload) {
     if (notification === "API-Fetch") {
       this.callApi(payload);
-    }
-    if (notification === "Holiday-Fetch") {
+    } else if (notification === "Holiday-Fetch") {
       this.callHoliday();
     }
-  },
+  }
 });
